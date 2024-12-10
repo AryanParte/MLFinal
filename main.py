@@ -29,7 +29,7 @@ class CarPriceAnalysis:
         print(self.data.info())
 
     def data_visualization(self):
-        # Create a figure for price distribution
+        #create a figure for price distribution
         plt.figure(figsize=(12, 6))
         sns.histplot(self.data['Price'], bins=50, kde=True)
         plt.title('Price Distribution')
@@ -37,7 +37,7 @@ class CarPriceAnalysis:
         plt.ylabel('Count')
         plt.show()
 
-        # Correlation heatmap of numerical features
+        #correlation heatmap 
         numerical_features = ['Price', 'Levy', 'Prod. year', 'Engine volume', 'Mileage', 'Cylinders', 'Airbags', 'Age', 'Power_Index']
         plt.figure(figsize=(12, 10))
         correlation_matrix = self.data[numerical_features].corr()
@@ -46,7 +46,7 @@ class CarPriceAnalysis:
         plt.tight_layout()
         plt.show()
 
-        # Box plots for categorical variables vs price
+        #box plots for categorical variables vs price
         categorical_vars = ['Manufacturer', 'Category', 'Fuel type']
         plt.figure(figsize=(15, 5))
         for i, var in enumerate(categorical_vars, 1):
@@ -77,18 +77,18 @@ class CarPriceAnalysis:
 
     def preprocess_data(self):
         try:
-            # Handle missing values
+            #handle missing values
             self.data['Levy'] = pd.to_numeric(self.data['Levy'].replace('-', '0'), errors='coerce')
             self.data['Levy'] = self.data['Levy'].fillna(self.data['Levy'].median())
             
-            # Clean numerical features
+            #clean numerical features
             self.data['Mileage'] = self.data['Mileage'].str.replace(' km', '').str.replace(',', '').astype(float)
             self.data['Engine volume'] = self.data['Engine volume'].str.replace(' Turbo', '').astype(float)
             
-            # Handle outliers
+            # handle outliers
             self.handle_price_outliers()
             
-            # Feature engineering
+            # feature engineering
             self.data['Age'] = 2024 - self.data['Prod. year']
             self.data['Power_Index'] = self.data['Engine volume'] * self.data['Cylinders']
             
@@ -101,22 +101,22 @@ class CarPriceAnalysis:
                 'Fuel type', 'Gear box type', 'Drive wheels'
             ]
             
-            # Create features
+            # create features
             X_categorical = pd.get_dummies(self.data[categorical_features])
             X = pd.concat([self.data[numerical_features], X_categorical], axis=1)
             y = self.data['Price']
             
-            # First split: training and temporary test set (80-20)
+            #first split: training and temporary test set (80-20)
             X_temp, self.X_test, y_temp, self.y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42
             )
             
-            # Second split: training and validation set (75-25 of the remaining 80%)
+            #second split: training and validation set (75-25 of the remaining 80%)
             self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(
                 X_temp, y_temp, test_size=0.25, random_state=42
             )
             
-            # Scale features
+            # scale features
             scaler = StandardScaler()
             self.X_train_scaled = scaler.fit_transform(self.X_train)
             self.X_val_scaled = scaler.transform(self.X_val)
@@ -132,7 +132,7 @@ class CarPriceAnalysis:
 
     def train_models(self):
         try:
-            # KNN with validation-based tuning
+            # KNN with validation based tuning
             knn_params = {
                 'n_neighbors': [3, 5, 7, 9, 11],
                 'weights': ['uniform', 'distance'],
@@ -144,7 +144,7 @@ class CarPriceAnalysis:
             knn_grid.fit(self.X_train_scaled, self.y_train)
             self.models['KNN'] = knn_grid.best_estimator_
             
-            # Ridge with validation-based tuning
+            #Ridge with validation based tuning
             ridge_params = {'alpha': [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]}
             ridge = Ridge()
             ridge_grid = GridSearchCV(ridge, ridge_params, cv=5, scoring='r2', n_jobs=-1)
@@ -163,13 +163,13 @@ class CarPriceAnalysis:
         print("\nModel Evaluation")
         
         for name, model in self.models.items():
-            # Validation set performance
+            # validation set performance
             val_pred = model.predict(self.X_val_scaled)
             val_mae = mean_absolute_error(self.y_val, val_pred)
             val_rmse = np.sqrt(mean_squared_error(self.y_val, val_pred))
             val_r2 = r2_score(self.y_val, val_pred)
             
-            # Test set performance
+            # test set performance
             test_pred = model.predict(self.X_test_scaled)
             test_mae = mean_absolute_error(self.y_test, test_pred)
             test_rmse = np.sqrt(mean_squared_error(self.y_test, test_pred))
@@ -188,7 +188,7 @@ class CarPriceAnalysis:
 
     def visualize_model_performance(self):
         for name, model in self.models.items():
-            # Predictions vs Actual scatter plot
+            #Predictions vs actual scatter plot
             plt.figure(figsize=(10, 6))
             test_pred = model.predict(self.X_test_scaled)
             plt.scatter(self.y_test, test_pred, alpha=0.5)
@@ -201,7 +201,7 @@ class CarPriceAnalysis:
             plt.tight_layout()
             plt.show()
 
-            # Residual plot
+            #residual plot
             residuals = test_pred - self.y_test
             plt.figure(figsize=(10, 6))
             plt.scatter(test_pred, residuals, alpha=0.5)
@@ -212,7 +212,7 @@ class CarPriceAnalysis:
             plt.tight_layout()
             plt.show()
 
-            # Error distribution
+            # error distributoin
             plt.figure(figsize=(10, 6))
             sns.histplot(residuals, bins=50, kde=True)
             plt.xlabel('Prediction Error ($)')
@@ -222,7 +222,7 @@ class CarPriceAnalysis:
             plt.show()
 
     def visualize_data_distributions(self):
-        # Price distribution before outlier removal
+        # price distribution before outlier removal
         plt.figure(figsize=(10, 6))
         sns.histplot(self.data['Price'], bins=50, kde=True)
         plt.title('Price Distribution Before Outlier Removal')
@@ -240,7 +240,7 @@ class CarPriceAnalysis:
         plt.tight_layout()
         plt.show()
         
-        # Categorical features distribution
+        #Categorical features distirbution
         cat_features = ['Manufacturer', 'Category', 'Fuel type', 'Drive wheels']
         plt.figure(figsize=(15, 10))
         for i, feature in enumerate(cat_features, 1):
